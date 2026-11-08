@@ -1,0 +1,33 @@
+name: Build NWA
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: NumWorks_Android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Outils
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi make
+          pip install pillow
+      - name: Ressources
+        run: python tools/prepare_assets.py
+      - name: Compilation
+        run: make build
+      - name: Taille
+        run: arm-none-eabi-size output/NumWorks_Android.nwa || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NumWorks_Android
+          path: NumWorks_Android/output/NumWorks_Android.nwa
